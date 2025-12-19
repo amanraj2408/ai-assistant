@@ -3,18 +3,14 @@
 import { db } from '@/db/db';
 import { chatMessages, chatSessions } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { getServerSession } from 'next-auth';
+import { getServerSession, Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-interface SessionUser {
-  id: string;
-  email?: string;
-  name?: string;
-  image?: string;
-}
-
-function getUserId(session: any): string {
-  return (session.user as SessionUser).id || (session.user as any).id;
+function getUserId(session: Session | null): string {
+  if (!session?.user?.id) {
+    throw new Error('User ID not found');
+  }
+  return session.user.id;
 }
 
 export async function createChatSession(title: string) {
@@ -25,9 +21,6 @@ export async function createChatSession(title: string) {
   }
 
   const userId = getUserId(session);
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
 
   const result = await db
     .insert(chatSessions)
@@ -48,9 +41,6 @@ export async function getChatSessions() {
   }
 
   const userId = getUserId(session);
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
 
   return await db
     .select()
@@ -67,9 +57,6 @@ export async function getChatMessages(sessionId: number) {
   }
 
   const userId = getUserId(session);
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
 
   // Verify user owns this session
   const sessionRecord = await db
@@ -102,9 +89,6 @@ export async function saveChatMessage(
   }
 
   const userId = getUserId(session);
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
 
   // Verify user owns this session
   const sessionRecord = await db
@@ -141,9 +125,6 @@ export async function updateSessionTitle(
   }
 
   const userId = getUserId(session);
-  if (!userId) {
-    throw new Error('User ID not found');
-  }
 
   // Verify user owns this session
   const sessionRecord = await db

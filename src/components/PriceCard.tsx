@@ -17,7 +17,7 @@ export default function PriceCard({ data }: PriceCardProps) {
   const isPositive = data.change >= 0;
 
   return (
-    <Card className='p-4 bg-gradient-to-br from-green-100 to-emerald-100 border-0'>
+    <Card className='p-4 bg-linear-to-br from-green-100 to-emerald-100 border-0'>
       <div className='flex items-start justify-between'>
         <div>
           <h3 className='font-bold text-lg text-gray-900'>{data.symbol}</h3>

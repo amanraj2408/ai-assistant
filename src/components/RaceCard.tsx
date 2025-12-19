@@ -16,7 +16,7 @@ interface RaceCardProps {
 
 export default function RaceCard({ data }: RaceCardProps) {
   return (
-    <Card className='p-4 bg-gradient-to-br from-red-100 to-orange-100 border-0'>
+    <Card className='p-4 bg-linear-to-br from-red-100 to-orange-100 border-0'>
       <div className='flex items-start justify-between'>
         <div>
           <h3 className='font-bold text-lg text-gray-900'>
