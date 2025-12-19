@@ -9,14 +9,19 @@ import { authOptions } from '@/lib/auth';
 export async function createChatSession(title: string) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
+  }
+
+  const userId = (session.user as any).id;
+  if (!userId) {
+    throw new Error('User ID not found');
   }
 
   const result = await db
     .insert(chatSessions)
     .values({
-      userId: session.user.id,
+      userId,
       title,
     })
     .returning();
@@ -27,22 +32,32 @@ export async function createChatSession(title: string) {
 export async function getChatSessions() {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
+  }
+
+  const userId = (session.user as any).id;
+  if (!userId) {
+    throw new Error('User ID not found');
   }
 
   return await db
     .select()
     .from(chatSessions)
-    .where(eq(chatSessions.userId, session.user.id))
+    .where(eq(chatSessions.userId, userId))
     .orderBy(desc(chatSessions.updatedAt));
 }
 
 export async function getChatMessages(sessionId: number) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
+  }
+
+  const userId = (session.user as any).id;
+  if (!userId) {
+    throw new Error('User ID not found');
   }
 
   // Verify user owns this session
@@ -51,7 +66,7 @@ export async function getChatMessages(sessionId: number) {
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
 
-  if (!sessionRecord.length || sessionRecord[0].userId !== session.user.id) {
+  if (!sessionRecord.length || sessionRecord[0].userId !== userId) {
     throw new Error('Unauthorized: Session does not belong to user');
   }
 
@@ -71,8 +86,13 @@ export async function saveChatMessage(
 ) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
+  }
+
+  const userId = (session.user as any).id;
+  if (!userId) {
+    throw new Error('User ID not found');
   }
 
   // Verify user owns this session
@@ -81,7 +101,7 @@ export async function saveChatMessage(
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
 
-  if (!sessionRecord.length || sessionRecord[0].userId !== session.user.id) {
+  if (!sessionRecord.length || sessionRecord[0].userId !== userId) {
     throw new Error('Unauthorized: Session does not belong to user');
   }
 
@@ -105,8 +125,13 @@ export async function updateSessionTitle(
 ) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
+  }
+
+  const userId = (session.user as any).id;
+  if (!userId) {
+    throw new Error('User ID not found');
   }
 
   // Verify user owns this session
@@ -115,7 +140,7 @@ export async function updateSessionTitle(
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
 
-  if (!sessionRecord.length || sessionRecord[0].userId !== session.user.id) {
+  if (!sessionRecord.length || sessionRecord[0].userId !== userId) {
     throw new Error('Unauthorized');
   }
 

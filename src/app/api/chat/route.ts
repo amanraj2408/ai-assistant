@@ -1,6 +1,5 @@
 import { streamText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { tools } from '@/lib/tools';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -24,21 +23,19 @@ export async function POST(req: Request) {
     const result = streamText({
       model: google('gemini-1.5-flash'),
       messages,
-      tools,
-      system: `You are a helpful and friendly AI assistant. You have access to real-time tools for:
-1. Weather information (use getWeather for weather queries)
-2. Stock prices (use getStockPrice for stock market queries)
-3. F1 racing information (use getF1Races for F1 queries)
+      system: `You are a helpful and friendly AI assistant. You can help with:
+1. Answering general questions
+2. Providing information on weather, stocks, and F1 racing
+3. Having conversations about various topics
 
-When users ask questions related to these topics, use the appropriate tool to get accurate, real-time data.
-Always be conversational and helpful. If you use a tool, explain the results in a friendly manner.
-If the user asks something you can't help with, be honest about your limitations.`,
+Always be conversational and helpful. If the user asks something you can't help with, be honest about your limitations.`,
       temperature: 0.7,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('Chat API Error:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
 }
+

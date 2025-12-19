@@ -13,7 +13,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
   const session = await getServerSession(authOptions);
   const { id } = await params;
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     redirect('/auth/signin');
   }
 

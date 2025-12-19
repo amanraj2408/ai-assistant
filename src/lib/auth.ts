@@ -1,6 +1,6 @@
 import type { NextAuthOptions } from 'next-auth';
-import GitHubProvider from '@auth/nextjs/providers/github';
-import GoogleProvider from '@auth/nextjs/providers/google';
+import GithubProvider from 'next-auth/providers/github';
+import GoogleProvider from 'next-auth/providers/google';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db/db';
 
@@ -15,7 +15,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
   providers: [
-    GitHubProvider({
+    GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
       allowDangerousEmailAccountLinking: true,
@@ -29,7 +29,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, user }) {
       if (session.user) {
-        session.user.id = user.id;
+        (session.user as any).id = user.id;
       }
       return session;
     },

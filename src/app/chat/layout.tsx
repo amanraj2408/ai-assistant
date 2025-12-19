@@ -13,7 +13,7 @@ export default async function ChatLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session?.user) {
     redirect('/auth/signin');
   }
 
@@ -47,7 +47,7 @@ export default async function ChatLayout({
 
         <div className='border-t border-gray-700 pt-4'>
           <p className='text-xs text-gray-500'>Signed in as</p>
-          <p className='text-sm font-medium text-gray-300'>{session.user.name}</p>
+          <p className='text-sm font-medium text-gray-300'>{session.user?.name}</p>
         </div>
       </div>
 

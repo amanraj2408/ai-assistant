@@ -5,7 +5,11 @@ import { useSession } from 'next-auth/react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import ChatMessage from './ChatMessage';
-import { useChat } from 'ai/react';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 interface ChatInterfaceProps {
   sessionId: number;
@@ -13,16 +17,66 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ sessionId }: ChatInterfaceProps) {
   const { data: session } = useSession();
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: '/api/chat',
-    body: { sessionId },
-  });
-
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = { role: 'user' as const, content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          sessionId,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to get response');
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+
+      while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        assistantMessage += chunk;
+        setMessages((prev) => {
+          const updated = [...prev];
+          if (updated[updated.length - 1]?.role === 'assistant') {
+            updated[updated.length - 1].content = assistantMessage;
+          } else {
+            updated.push({ role: 'assistant', content: assistantMessage });
+          }
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!session) {
     return (
@@ -55,7 +109,7 @@ export default function ChatInterface({ sessionId }: ChatInterfaceProps) {
         <div className='flex gap-2'>
           <Textarea
             value={input}
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
             placeholder='Type your message...'
             rows={3}
             disabled={isLoading}
