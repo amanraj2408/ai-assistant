@@ -33,7 +33,7 @@ export default async function ChatLayout({
         <div className='flex-1 overflow-y-auto'>
           <h3 className='text-sm font-semibold text-gray-400 mb-4'>Chat History</h3>
           <div className='space-y-2'>
-            {sessions.map((sess) => (
+            {sessions.map((sess: typeof sessions[0]) => (
               <Link
                 key={sess.id}
                 href={`/chat/${sess.id}`}

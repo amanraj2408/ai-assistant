@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '@/db/db';
+import { db as getDB } from '@/db/db';
 import { chatMessages, chatSessions } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { getServerSession, Session } from 'next-auth';
@@ -22,7 +22,7 @@ export async function createChatSession(title: string) {
 
   const userId = getUserId(session);
 
-  const result = await db
+  const result = await getDB()
     .insert(chatSessions)
     .values({
       userId,
@@ -42,7 +42,7 @@ export async function getChatSessions() {
 
   const userId = getUserId(session);
 
-  return await db
+  return await getDB()
     .select()
     .from(chatSessions)
     .where(eq(chatSessions.userId, userId))
@@ -59,7 +59,7 @@ export async function getChatMessages(sessionId: number) {
   const userId = getUserId(session);
 
   // Verify user owns this session
-  const sessionRecord = await db
+  const sessionRecord = await getDB()
     .select()
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
@@ -68,7 +68,7 @@ export async function getChatMessages(sessionId: number) {
     throw new Error('Unauthorized: Session does not belong to user');
   }
 
-  return await db
+  return await getDB()
     .select()
     .from(chatMessages)
     .where(eq(chatMessages.sessionId, sessionId))
@@ -91,7 +91,7 @@ export async function saveChatMessage(
   const userId = getUserId(session);
 
   // Verify user owns this session
-  const sessionRecord = await db
+  const sessionRecord = await getDB()
     .select()
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
@@ -100,7 +100,7 @@ export async function saveChatMessage(
     throw new Error('Unauthorized: Session does not belong to user');
   }
 
-  const result = await db
+  const result = await getDB()
     .insert(chatMessages)
     .values({
       sessionId,
@@ -127,7 +127,7 @@ export async function updateSessionTitle(
   const userId = getUserId(session);
 
   // Verify user owns this session
-  const sessionRecord = await db
+  const sessionRecord = await getDB()
     .select()
     .from(chatSessions)
     .where(eq(chatSessions.id, sessionId));
@@ -136,7 +136,7 @@ export async function updateSessionTitle(
     throw new Error('Unauthorized');
   }
 
-  const result = await db
+  const result = await getDB()
     .update(chatSessions)
     .set({ title, updatedAt: new Date() })
     .where(eq(chatSessions.id, sessionId))
