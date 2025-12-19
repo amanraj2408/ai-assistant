@@ -5,7 +5,14 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/db/db';
 
-const providers: any[] = [];
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  console.warn('Supabase credentials not configured - using local database only');
+}
+
+const providers = [];
 
 // Add GitHub provider only if credentials are available
 if (process.env.GITHUB_ID && process.env.GITHUB_SECRET) {
@@ -50,7 +57,7 @@ providers.push(
   })
 );
 
-export const authOptions: NextAuthOptions = {
+const authConfig: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
   providers,
   callbacks: {
@@ -66,3 +73,5 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+export const authOptions: NextAuthOptions = authConfig;
